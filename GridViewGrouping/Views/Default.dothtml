@@ -1,0 +1,31 @@
+﻿@viewModel GridViewGrouping.ViewModels.DefaultViewModel, GridViewGrouping
+@masterPage Views/MasterPage.dotmaster
+<dot:Content ContentPlaceHolderID="MainContent">
+
+    <p>
+        <dot:ComboBox DataSource="{value: AllGroupings}" SelectedValue="{value: ProductGrouping}" SelectionChanged="{command: Products.RequestRefresh()}" />
+    </p>
+
+    <cc:GroupingGridView DataSource="{value: Products}">
+        <GroupHeaderTemplate>
+            {{value: GroupDisplayName}}
+            (items: {{value: ProductsCount}})
+            (price: {{value: TotalPrice}})
+        </GroupHeaderTemplate>
+        <Columns>
+            <dot:GridViewTextColumn ValueBinding="{value: ProductId}" HeaderText="ID" />
+            <dot:GridViewTextColumn ValueBinding="{value: ProductName}" HeaderText="Name" />
+            <dot:GridViewTextColumn ValueBinding="{value: SupplierName}" HeaderText="Supplier" />
+            <dot:GridViewTextColumn ValueBinding="{value: CategoryName}" HeaderText="Category" />
+            <dot:GridViewTextColumn ValueBinding="{value: QuantityPerUnit}" HeaderText="Qty per unit" />
+            <dot:GridViewTextColumn ValueBinding="{value: UnitPrice}" HeaderText="Unit price" />
+            <dot:GridViewTextColumn ValueBinding="{value: UnitsInStock}" HeaderText="Units in stock" />
+            <dot:GridViewTextColumn ValueBinding="{value: UnitsOnOrder}" HeaderText="Units on order" />
+            <dot:GridViewTextColumn ValueBinding="{value: ReorderLevel}" HeaderText="Reorder level" />
+            <dot:GridViewTextColumn ValueBinding="{value: Discontinued}" HeaderText="Discontinued" />
+        </Columns>
+    </cc:GroupingGridView>
+
+    <dot:DataPager DataSet="{value: Products}" />
+
+</dot:Content>
