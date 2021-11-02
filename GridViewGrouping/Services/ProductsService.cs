@@ -38,6 +38,18 @@ namespace GridViewGrouping.Services
                 UnitsInStock = p.UnitsInStock,
                 UnitsOnOrder = p.UnitsOnOrder
             });
+
+            if (productGrouping == ProductGrouping.Category)
+            {
+                productsDataSet.SortingOptions.SortExpression = nameof(ProductListDto.CategoryName);
+                productsDataSet.SortingOptions.SortDescending = false;
+            }
+            else if (productGrouping == ProductGrouping.Supplier)
+            {
+                productsDataSet.SortingOptions.SortExpression = nameof(ProductListDto.SupplierName);
+                productsDataSet.SortingOptions.SortDescending = false;
+            }
+
             await productsDataSet.LoadFromQueryableAsync(queryable);
 
             // load group info
