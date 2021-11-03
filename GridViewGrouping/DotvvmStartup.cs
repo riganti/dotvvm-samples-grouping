@@ -25,7 +25,7 @@ namespace GridViewGrouping
 
         private void ConfigureControls(DotvvmConfiguration config, string applicationPath)
         {
-            config.Markup.AddCodeControls("cc", typeof(GroupingGridView));
+            config.Markup.AddCodeControls("cc", typeof(GroupingGridViewRowDecorator));
         }
 
         private void ConfigureResources(DotvvmConfiguration config, string applicationPath)
