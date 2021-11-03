@@ -4,7 +4,7 @@
         where T : GroupInfo
     {
 
-        public new T? GroupInfo { get; set; }
+        public T? GroupInfo { get; set; }
 
     }
 

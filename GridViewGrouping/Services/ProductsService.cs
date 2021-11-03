@@ -19,7 +19,6 @@ namespace GridViewGrouping.Services
             this.db = db;
         }
 
-
         public async Task GetProducts(GridViewDataSet<ProductListDto> productsDataSet, ProductGrouping productGrouping)
         {
             // load products
@@ -41,21 +40,12 @@ namespace GridViewGrouping.Services
 
             if (productGrouping == ProductGrouping.Category)
             {
+                // group by category and load additional data (number of products in a group and total ordered price)
                 productsDataSet.SortingOptions.SortExpression = nameof(ProductListDto.CategoryName);
                 productsDataSet.SortingOptions.SortDescending = false;
-            }
-            else if (productGrouping == ProductGrouping.Supplier)
-            {
-                productsDataSet.SortingOptions.SortExpression = nameof(ProductListDto.SupplierName);
-                productsDataSet.SortingOptions.SortDescending = false;
-            }
 
-            await productsDataSet.LoadFromQueryableAsync(queryable);
-
-            // load group info
-            if (productGrouping == ProductGrouping.Category)
-            {
-                await productsDataSet.ApplyGrouping(
+                await productsDataSet.LoadFromQueryableWithGroupingAsync(
+                    queryable,
                     p => p.CategoryId, 
                     groupKeys => db.Categories
                         .Where(c => groupKeys.Contains(c.CategoryId))
@@ -69,7 +59,12 @@ namespace GridViewGrouping.Services
             }
             else if (productGrouping == ProductGrouping.Supplier)
             {
-                await productsDataSet.ApplyGrouping(
+                // group by supplier and load additional data (number of products in a group and total ordered price)
+                productsDataSet.SortingOptions.SortExpression = nameof(ProductListDto.SupplierName);
+                productsDataSet.SortingOptions.SortDescending = false;
+
+                await productsDataSet.LoadFromQueryableWithGroupingAsync(
+                    queryable,
                     p => p.SupplierId,
                     groupKeys => db.Suppliers
                         .Where(s => groupKeys.Contains(s.SupplierId))
@@ -83,7 +78,7 @@ namespace GridViewGrouping.Services
             }
             else
             {
-                productsDataSet.ResetGrouping();
+                await productsDataSet.LoadFromQueryableAsync(queryable);
             }
         }
 

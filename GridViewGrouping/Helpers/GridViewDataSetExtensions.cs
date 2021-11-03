@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using DotVVM.Framework.Compilation.Binding;
 using DotVVM.Framework.Controls;
+using DotVVM.Framework.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace GridViewGrouping.Helpers
@@ -18,13 +22,38 @@ namespace GridViewGrouping.Helpers
             dataSet.IsRefreshRequired = false;
         }
 
-        public static async Task ApplyGrouping<T, TGroupKey, TGroupInfo>(this GridViewDataSet<T> dataSet, Func<T, TGroupKey> getGroupKey, Func<List<TGroupKey>, IQueryable<TGroupInfo>> getGroupInfos)
+        public static async Task LoadFromQueryableWithGroupingAsync<T, TGroupKey>(this GridViewDataSet<T> dataSet, IQueryable<T> source, Func<T, TGroupKey> getGroupKey, Func<T, string> getGroupDisplayName)
+            where T : class, IHasGroupInfo<GroupInfo>
+        {
+            await dataSet.LoadFromQueryableAsync(source);
+
+            var groupInfos = dataSet.Items.Select(i => new GroupInfo()
+                {
+                    GroupKey = getGroupKey(i)?.ToString(),
+                    GroupDisplayName = getGroupDisplayName(i)
+                })
+                .Distinct()
+                .ToList();
+
+            ApplyGroupInfos(dataSet, getGroupKey, groupInfos);
+        }
+
+        public static async Task LoadFromQueryableWithGroupingAsync<T, TGroupKey, TGroupInfo>(this GridViewDataSet<T> dataSet, IQueryable<T> source, Func<T, TGroupKey> getGroupKey, Func<List<TGroupKey>, IQueryable<TGroupInfo>> getGroupInfos)
             where T : class, IHasGroupInfo<TGroupInfo>
             where TGroupInfo : GroupInfo
         {
+            await dataSet.LoadFromQueryableAsync(source);
+
             var groupKeys = dataSet.Items.Select(getGroupKey).Distinct().ToList();
             var groupInfos = await getGroupInfos(groupKeys).ToListAsync();
 
+            ApplyGroupInfos(dataSet, getGroupKey, groupInfos);
+        }
+
+        private static void ApplyGroupInfos<T, TGroupKey, TGroupInfo>(GridViewDataSet<T> dataSet, Func<T, TGroupKey> getGroupKey, List<TGroupInfo> groupInfos) 
+            where T : class, IHasGroupInfo<TGroupInfo> 
+            where TGroupInfo : GroupInfo
+        {
             var lastExpandedState = false;
             var lastKey = string.Empty;
             for (var i = 0; i < dataSet.Items.Count; i++)
@@ -42,15 +71,6 @@ namespace GridViewGrouping.Helpers
 
                 lastKey = key;
                 lastExpandedState = dataSet.Items[i].GroupInfo.IsExpanded;
-            }
-        }
-
-        public static void ResetGrouping<T>(this GridViewDataSet<T> dataSet)
-            where T : class
-        {
-            foreach (var item in dataSet.Items)
-            {
-                ((dynamic)item).GroupInfo = null;
             }
         }
     }
